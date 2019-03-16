@@ -5,25 +5,25 @@
 #include "numbers.dat"
 
 
-#define MAX_N 100001
+#define MAX_N 100000
 
+/* Primality test for numbers range [0, MAX_N] using sieve of Eratosthenes */
 class Primes {
-    int prime[MAX_N];
+    int prime[MAX_N+1];
 public:
     Primes() 
     {
-        std::fill(prime, &prime[MAX_N], 1);
+        std::fill(prime, &prime[MAX_N+1], 1);
         prime[0] = 0;
         prime[1] = 0;
-        for (int i = 4; i < MAX_N; i += 2)
+
+        for (int i = 4; i <= MAX_N; i += 2)
             prime[i] = 0;
-        for (int p = 3; p < MAX_N; p += 2) {
-            if (prime[p] == 1) {
-                for (int i = 2*p; i < MAX_N; i += p) {
+        
+        for (int p = 3; p <= MAX_N; p += 2)
+            if (prime[p] == 1)
+                for (int i = 2*p; i <= MAX_N; i += p)
                     prime[i] = 0;
-                }
-            }
-        }
     }
 
     int 
@@ -46,7 +46,7 @@ main(int argc, char *argv[])
     for (int i = 0; i < argc/2; i++) {
         int read = std::sscanf(argv[1+2*i], "%d", &l[i]) 
             + std::sscanf(argv[2+2*i], "%d", &r[i]);
-        if (!(read = 2 && 0 <= l[i] && r[i] < MAX_N))
+        if (!(read == 2 && 0 <= l[i] && r[i] <= MAX_N))
             return -1;
     }
     
@@ -65,4 +65,7 @@ main(int argc, char *argv[])
         }
         std::cout << res << std::endl;
     }
+    
+    delete[] l;
+    delete[] r;
 }
