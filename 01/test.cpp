@@ -1,31 +1,37 @@
 #include <iostream>
 #include <cstdio>
 #include <algorithm>
+/* Data, Size */
 #include "numbers.dat"
 
-// Data
-// Size
 
-const int MAX_N = 100001;
+#define MAX_N 100001
 
-int prime[MAX_N];
-
-void
-init_prime()
-{
-    std::fill(prime, &prime[MAX_N], 1);
-    prime[0] = 0;
-    prime[1] = 0;
-    for (int i = 4; i < MAX_N; i += 2)
-        prime[i] = 0;
-    for (int p = 3; p < MAX_N; p += 2) {
-        if (prime[p] == 1) {
-            for (int i = 2*p; i < MAX_N; i += p) {
-                prime[i] = 0;
+class Primes {
+    int prime[MAX_N];
+public:
+    Primes() 
+    {
+        std::fill(prime, &prime[MAX_N], 1);
+        prime[0] = 0;
+        prime[1] = 0;
+        for (int i = 4; i < MAX_N; i += 2)
+            prime[i] = 0;
+        for (int p = 3; p < MAX_N; p += 2) {
+            if (prime[p] == 1) {
+                for (int i = 2*p; i < MAX_N; i += p) {
+                    prime[i] = 0;
+                }
             }
         }
     }
-}
+
+    int 
+    operator[](int i) 
+    {
+        return prime[i];
+    }
+};
 
 int
 main(int argc, char *argv[])
@@ -35,6 +41,7 @@ main(int argc, char *argv[])
     
     int *l = new int[argc/2];
     int *r = new int[argc/2];
+    Primes prime;
 
     for (int i = 0; i < argc/2; i++) {
         int read = std::sscanf(argv[1+2*i], "%d", &l[i]) 
@@ -43,8 +50,6 @@ main(int argc, char *argv[])
             return -1;
     }
     
-    init_prime();
-
     for (int i = 0; i < argc/2; ++i) {
         auto beg = std::upper_bound(Data, Data+Size, l[i]-1);
         auto end = std::upper_bound(Data, Data+Size, r[i]);
