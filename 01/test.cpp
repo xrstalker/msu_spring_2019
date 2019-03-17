@@ -7,28 +7,37 @@
 
 #define MAX_N 100000
 
-/* Primality test for numbers range [0, MAX_N] using sieve of Eratosthenes */
+/* Primality test for numbers in range [0, MAX_N] using sieve of Eratosthenes */
 class Primes {
-    int prime[MAX_N+1];
+    int *prime;
+    int n;
 public:
-    Primes() 
+    Primes(int max_prime)
     {
-        std::fill(prime, &prime[MAX_N+1], 1);
+        n = max_prime;
+        prime = new int[n+1];
+        std::fill(prime, &prime[n+1], 1);
         prime[0] = 0;
         prime[1] = 0;
 
-        for (int i = 4; i <= MAX_N; i += 2)
+        for (int i = 4; i <= n; i += 2)
             prime[i] = 0;
         
-        for (int p = 3; p <= MAX_N; p += 2)
+        for (int p = 3; p <= n; p += 2)
             if (prime[p] == 1)
-                for (int i = 2*p; i <= MAX_N; i += p)
+                for (int i = 2*p; i <= n; i += p)
                     prime[i] = 0;
+    }
+
+    ~Primes()
+    {
+        delete[] prime;
     }
 
     int 
     operator[](int i) 
     {
+        /* we could add border check */
         return prime[i];
     }
 };
@@ -38,34 +47,34 @@ main(int argc, char *argv[])
 {
     if (argc % 2 != 1 || argc == 1)
         return -1;
-    
-    int *l = new int[argc/2];
-    int *r = new int[argc/2];
-    Primes prime;
+    argc--; 
+    int *v = new int[argc];
+    Primes prime(MAX_N);
 
-    for (int i = 0; i < argc/2; i++) {
-        int read = std::sscanf(argv[1+2*i], "%d", &l[i]) 
-            + std::sscanf(argv[2+2*i], "%d", &r[i]);
-        if (!(read == 2 && 0 <= l[i] && r[i] <= MAX_N))
+    for (int i = 0; i < argc; i++) {
+        int read = std::sscanf(argv[i+1], "%d", &v[i]);
+        if (read != 1)
             return -1;
     }
     
     for (int i = 0; i < argc/2; ++i) {
-        auto beg = std::upper_bound(Data, Data+Size, l[i]-1);
-        auto end = std::upper_bound(Data, Data+Size, r[i]);
+        int l = v[i*2];
+        int r = v[i*2 + 1];
+        int res = 0;
+        auto beg = std::lower_bound(Data, Data+Size, l);
+        auto end = std::upper_bound(Data, Data+Size, r);
 
-        if (beg == Data+Size || beg[0] != l[i] || end == Data || end[-1] != r[i]) {
+        if (beg == Data+Size || beg[0] != l || l < 0
+              || end == Data || end[-1] != r || r > MAX_N) {
             std::cout << 0 << std::endl;
             continue;
         }
         
-        int res = 0;
         for (auto i = beg; i < end; ++i) {
             res += prime[*i];
         }
         std::cout << res << std::endl;
     }
     
-    delete[] l;
-    delete[] r;
+    delete[] v;
 }
