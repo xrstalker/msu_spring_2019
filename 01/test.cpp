@@ -1,6 +1,7 @@
-#include <iostream>
 #include <cstdio>
+#include <iostream>
 #include <algorithm>
+#include <vector>
 /* Data, Size */
 #include "numbers.dat"
 
@@ -42,21 +43,34 @@ public:
     }
 };
 
+int 
+parse_args(int argc, char *argv[], std::vector<int> &v)
+{
+    if (argc % 2 != 1 || argc == 1)
+        return 0;
+    
+    int x;
+    int read;
+    for (int i = 1; i < argc; i++) {
+        int read = std::sscanf(argv[i], "%d", &x);
+        if (read != 1) {
+            return 0;
+        }
+        v.push_back(x);
+    }
+    return argc-1;
+}
+
 int
 main(int argc, char *argv[])
 {
-    if (argc % 2 != 1 || argc == 1)
-        return -1;
-    argc--; 
-    int *v = new int[argc];
+    std::vector<int> v;
     Primes prime(MAX_N);
 
-    for (int i = 0; i < argc; i++) {
-        int read = std::sscanf(argv[i+1], "%d", &v[i]);
-        if (read != 1)
-            return -1;
+    if (!parse_args(argc, argv, v)) {
+        return -1;
     }
-    
+
     for (int i = 0; i < argc/2; ++i) {
         int l = v[i*2];
         int r = v[i*2 + 1];
@@ -75,6 +89,4 @@ main(int argc, char *argv[])
         }
         std::cout << res << std::endl;
     }
-    
-    delete[] v;
 }
