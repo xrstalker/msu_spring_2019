@@ -82,8 +82,8 @@ class Tokenizer
     const std::string s;
     std::string::const_iterator c;
 
-    const static int64_t NEGAIVE_OVERFLOW = INT64_MIN / 10 - 1;
-    const static int64_t POSITIVE_OVERFLOW = INT64_MAX / 10 + 1;
+    const static int64_t NEGAIVE_OVERFLOW = INT64_MIN / 10;
+    const static int64_t POSITIVE_OVERFLOW = INT64_MAX / 10;
 
     token_type_t operation_to_type(char c) 
     {
