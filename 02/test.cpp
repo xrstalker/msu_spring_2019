@@ -21,8 +21,7 @@ struct Token
     token_type_t type;
     int64_t num;
 
-    Token(token_type_t t, int64_t n=0): type(t), num(n) {
-    }
+    Token(token_type_t t, int64_t n=0): type(t), num(n) { }
 
     std::string repr() const
     {
@@ -49,29 +48,28 @@ struct Token
 class Error: public std::exception
 {
 protected:
-    const std::string cause;
+    std::string msg;
 
 public:
-    Error(const char *c): cause(c) { }
-    virtual std::string repr() const
+    Error(const char *cause=NULL)
     {
-        return "Error: " + cause;
+        if (cause) msg = std::string("Error: ") + cause;
+    }
+    virtual const char *what() const noexcept
+    {
+        return msg.c_str();
     }
 };
 
 class BadToken: public Error 
 {
-    const Token token;
-
 public:
-    BadToken(const Token &t, const char *c): Error(c), token(t) { }
-    
-    std::string repr() const
-    {
-        if (cause.size()) {
-            return "BadToken(" + token.repr() + "): " + cause;
+    BadToken(const Token &token, const char *cause=NULL) 
+    { 
+        if (cause) {
+            msg = "BadToken(" + token.repr() + "): " + cause;
         } else {
-            return "BadToken(" + token.repr() + ")";
+            msg = "BadToken(" + token.repr() + ")";
         }
     }
 };
@@ -222,7 +220,6 @@ main(int argc, char *argv[])
         std::cout << calc.evaluate() << std::endl;
     }
     catch (Error &e) {
-      //std::cerr << e.repr() << std::endl;
         std::cout << "error" << std::endl;
         return 1;
     }
