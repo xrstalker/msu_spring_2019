@@ -4,16 +4,24 @@
 
 class Matrix 
 {
-    static constexpr size_t size_limit = 2000000000ul;
     const size_t rows;
     const size_t cols;
-    const int n;
+    const size_t n;
     double *data;
 
     static bool 
-    check_range(int i, size_t l) 
+    check_range(size_t i, size_t l) 
     {
-        return ((i < 0 && -i <= l) || (i >= 0 && i < l));
+        return ((0 <= i && i < l) || (0 <= i+l && i+l < l));
+    }
+
+    static int
+    ord2(size_t x) 
+    {
+        int r = 0;
+        while (x) 
+            r += 1, x /= 2;
+        return r;
     }
 
     class MatrixProxy {
@@ -25,26 +33,26 @@ class Matrix
         { }
 
         const double &
-        operator[] (int j) const
+        operator[] (size_t j) const
         {
             if (not check_range(j, cols))
                 throw std::out_of_range("last index out of range");
             
-            if (j < 0)
-                return data[cols + j];
-            else
+            if (j < cols)
                 return data[j];
+            else
+                return data[j + cols];
         }
         double &
-        operator[] (int j)
+        operator[] (size_t j)
         {
             if (not check_range(j, cols))
                 throw std::out_of_range("last index out of range");
             
-            if (j < 0)
-                return data[cols + j];
-            else
+            if (j < cols)
                 return data[j];
+            else
+                return data[j + cols];
         }
     };
 
@@ -52,7 +60,7 @@ public:
     Matrix(const size_t rows, const size_t cols):
         rows(rows), cols(cols), n(rows*cols)
     {
-        if (rows > size_limit || cols > size_limit || rows * cols > size_limit)
+        if (ord2(rows) + ord2(cols) + 2 > 8*sizeof n)
             throw std::bad_array_new_length();
 
         data = new double[n];
@@ -73,33 +81,33 @@ public:
     }
 
     const MatrixProxy
-    operator[] (int i) const
+    operator[] (size_t i) const
     {
         if (not check_range(i, rows))
             throw std::out_of_range("first index out of range");
         
-        if (i < 0)
-            return MatrixProxy(data + (rows + i) * cols, cols);
-        else
+        if (i < rows)
             return MatrixProxy(data + i * cols, cols);
+        else
+            return MatrixProxy(data + (i + rows) * cols, cols);
     }
 
     MatrixProxy
-    operator[] (int i)
+    operator[] (size_t i)
     {
         if (not check_range(i, rows))
             throw std::out_of_range("first index out of range");
         
-        if (i < 0)
-            return MatrixProxy(data + (rows + i) * cols, cols);
-        else
+        if (i < rows)
             return MatrixProxy(data + i * cols, cols);
+        else
+            return MatrixProxy(data + (i + rows) * cols, cols);
     }
 
     const Matrix &
     operator*= (double x) const
     {
-        for (int i = 0; i < n; ++i)
+        for (size_t i = 0; i < n; ++i)
             data[i] *= x;
         return *this;
     }
@@ -107,7 +115,7 @@ public:
     Matrix &
     operator*= (double x)
     {
-        for (int i = 0; i < n; ++i)
+        for (size_t i = 0; i < n; ++i)
             data[i] *= x;
         return *this;
     }
@@ -118,7 +126,7 @@ public:
             return true;
         if (m.n != n)
             return false;
-        for (int i = 0; i < n; ++i)
+        for (size_t i = 0; i < n; ++i)
             if (data[i] != m.data[i])
                 return false;
         return true;

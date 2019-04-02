@@ -55,6 +55,12 @@ int main()
     check(m1 == m4);
     check(m1 != m5);
 
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 3; ++j)
+            check(m1[i][j] == m1[i-2][j-3]);
+    check_throw(m1[0][-4], std::out_of_range);
+    check_throw(m1[-3][0], std::out_of_range);
+
     std::cout << "done\n";
 
     return 0;
