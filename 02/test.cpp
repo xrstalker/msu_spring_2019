@@ -122,6 +122,9 @@ class Tokenizer
     }
 
     Tokenizer(const Tokenizer &tok); 
+    Tokenizer(const Tokenizer &&tok);
+    Tokenizer &operator=(const Tokenizer &tok);
+    Tokenizer &operator=(const Tokenizer &&tok);
 public:
     Tokenizer(const char *str): s(str), c(s.begin()) { }
     Token get(bool negative=false) 
