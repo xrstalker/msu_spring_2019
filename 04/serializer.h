@@ -100,7 +100,7 @@ private:
         else if (s == False)
             arg = false;
         else
-            throw Error::CorruptedArchive;
+            return Error::CorruptedArchive;
         return Error::NoError;
     }
     Error process(uint64_t &arg)
@@ -109,7 +109,7 @@ private:
             in_ >> arg;
             return Error::NoError;
         } catch (...) {
-            throw Error::CorruptedArchive;
+            return Error::CorruptedArchive;
         }
     }
     
@@ -120,7 +120,7 @@ private:
         if (e == Error::NoError) {
             int c = in_.get();
             if (c != Separator)
-                throw Error::CorruptedArchive;
+                return Error::CorruptedArchive;
             return process(std::forward<ArgsT&>(args)...);
         } else {
             return e;
