@@ -86,7 +86,6 @@ public:
     template <class... ArgsT>
     Error operator()(ArgsT&... args)
     {
-        in_.seekg(0);
         return process(args...);
     }
 
