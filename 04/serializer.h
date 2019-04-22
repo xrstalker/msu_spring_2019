@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <cstdint>
+#include <string>
+#include <stdexcept>
 
 enum class Error
 {
@@ -9,12 +11,12 @@ enum class Error
     CorruptedArchive
 };
 
+static constexpr char Separator = ' ';
+static constexpr const char *True = "true";
+static constexpr const char *False = "false";
+
 class Serializer
 {
-    static constexpr char Separator = ' ';
-    static constexpr const char *True = "true";
-    static constexpr const char *False = "false";
-
     std::ostream &out_;
 public:
     explicit Serializer(std::ostream& out)
@@ -66,10 +68,6 @@ private:
 
 class Deserializer
 {
-    static constexpr char Separator = ' ';
-    static constexpr const char *True = "true";
-    static constexpr const char *False = "false";
-
     std::istream &in_;
 public:
     explicit Deserializer(std::istream &in)
@@ -104,10 +102,14 @@ private:
     }
     Error process(uint64_t &arg)
     {
+        std::string s;
+        in_ >> s;
         try {
-            in_ >> arg;
+            arg = std::stoull(s);
             return Error::NoError;
-        } catch (...) {
+        } catch (std::invalid_argument) {
+            return Error::CorruptedArchive;
+        } catch (std::out_of_range) {
             return Error::CorruptedArchive;
         }
     }
@@ -120,7 +122,7 @@ private:
             int c = in_.get();
             if (c != Separator)
                 return Error::CorruptedArchive;
-            return process(std::forward<ArgsT&>(args)...);
+            return process(args...);
         } else {
             return e;
         }
