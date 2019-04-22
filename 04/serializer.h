@@ -31,9 +31,9 @@ public:
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT... args)
+    Error operator()(ArgsT&&... args)
     {
-        return process(args...);
+        return process(std::forward<ArgsT>(args)...);
     }
 
 private:
@@ -53,7 +53,7 @@ private:
     }
     
     template <class T, class... ArgsT>
-    Error process(T arg, ArgsT... args)
+    Error process(T&& arg, ArgsT&&... args)
     {
         Error e = process(arg);
         if (e == Error::NoError) {
