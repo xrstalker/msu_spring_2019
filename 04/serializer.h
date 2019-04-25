@@ -107,9 +107,7 @@ private:
         try {
             arg = std::stoull(s);
             return Error::NoError;
-        } catch (std::invalid_argument) {
-            return Error::CorruptedArchive;
-        } catch (std::out_of_range) {
+        } catch (std::logic_error&) {
             return Error::CorruptedArchive;
         }
     }
