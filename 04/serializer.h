@@ -55,7 +55,7 @@ private:
     template <class T, class... ArgsT>
     Error process(T&& arg, ArgsT&&... args)
     {
-        Error e = process(arg);
+        Error e = process(std::forward<T>(arg));
         if (e == Error::NoError) {
             out_ << Separator;
             return process(std::forward<ArgsT>(args)...);
