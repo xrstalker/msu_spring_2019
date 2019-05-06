@@ -77,7 +77,6 @@ public:
     {
         int res = ftruncate(fd, new_size);
         if (res == -1) {
-            close(fd);
             throw FileError("Can't truncate file '" + filename + "'. errno=" + std::to_string(errno));
         }
         munmap(ptr, size || 1);
