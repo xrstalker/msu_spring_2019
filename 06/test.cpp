@@ -14,9 +14,6 @@
 #include <sys/mman.h>
 
 
-template <typename T>
-using Array = std::array<T, 4>;
-
 class Error: public std::exception {
     std::string message;
 public:
@@ -30,13 +27,13 @@ public:
 
 class FileError: public Error {
 public:
-    FileError(const std::string &message): Error(message) { }
+    FileError(const std::string &message): Error(std::string("FileError: ") + message) { }
 };
 
 
 class MapError: public Error {
 public:
-    MapError(const std::string &message): Error(message) { }
+    MapError(const std::string &message): Error(std::string("MapError: ") + message) { }
 };
 
 class MemoryMapping {
@@ -56,7 +53,6 @@ public:
             fd = open(filename.c_str(), file_opt);
 
         if (fd == -1) {
-            std::cerr << file_opt << ' ' << file_mode << ' ' << errno << std::endl;
             throw FileError(std::string("Can't open file '") + filename + "'. errno=" + std::to_string(errno));
         }
 
@@ -73,7 +69,6 @@ public:
         ptr = mmap(nullptr, size || 1, mmap_opt, MAP_SHARED, fd, 0);
         if (ptr == (void*)-1) {
             close(fd);
-            std::cerr << file_opt << ' ' << file_mode << ' ' << errno << std::endl;
             throw MapError(std::string("Can't mmap file '") + filename + "'. errno=" + std::to_string(errno));
         }
     }
@@ -85,7 +80,7 @@ public:
             close(fd);
             throw FileError("Can't truncate file '" + filename + "'. errno=" + std::to_string(errno));
         }
-        munmap(ptr, size);
+        munmap(ptr, size || 1);
         size = new_size;
         ptr = mmap(nullptr, size, mmap_opt, MAP_SHARED, fd, 0);
         if (ptr == (void*)-1) {
@@ -111,7 +106,7 @@ public:
     ~MemoryMapping()
     {
         if (ptr != (void*)-1)
-            munmap(ptr, size);
+            munmap(ptr, size || 1);
         close(fd);
         if (remove)
             std::remove(filename.c_str());
@@ -162,7 +157,6 @@ void split_file(MemoryMapping &part1_m, MemoryMapping &part2_m, MemoryMapping &s
 
 void sort_file(MemoryMapping *dst_m, MemoryMapping *src_m)
 {
-    /* move results after sorting to this file */
     uint64_t *src = static_cast<uint64_t*>(src_m->get_ptr());
     uint64_t *dst = static_cast<uint64_t*>(dst_m->get_ptr());
     dst_m->set_size(src_m->get_size());
@@ -189,6 +183,7 @@ void sort_file(MemoryMapping *dst_m, MemoryMapping *src_m)
         std::swap(dst, src);
         step *= 2;
     }
+    /* move results after sorting to dst file */
     /* because of last swap, current result in src */
     if (src != dst_m->get_ptr()) {
         std::memcpy(dst_m->get_ptr(), src, dst_m->get_size());
