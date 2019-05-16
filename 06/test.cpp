@@ -44,7 +44,7 @@ class MemoryMapping {
     int mmap_opt;
     bool remove;
 public:
-    MemoryMapping(std::string filename, int file_opt, int mmap_opt, size_t supp_size=0, int file_mode=0, bool remove=false):
+    MemoryMapping(const std::string &filename, int file_opt, int mmap_opt, size_t supp_size=0, int file_mode=0, bool remove=false):
         filename(filename), ptr(nullptr), mmap_opt(mmap_opt), remove(remove)
     {
         if (file_mode) {
@@ -67,7 +67,7 @@ public:
         }
         
         ptr = mmap(nullptr, size || 1, mmap_opt, MAP_SHARED, fd, 0);
-        if (ptr == (void*)-1) {
+        if (ptr == MAP_FAILED) {
             close(fd);
             throw MapError(std::string("Can't mmap file '") + filename + "'. errno=" + std::to_string(errno));
         }
@@ -79,12 +79,12 @@ public:
         if (res == -1) {
             throw FileError("Can't truncate file '" + filename + "'. errno=" + std::to_string(errno));
         }
-        if (ptr != nullptr || ptr != (void*)-1) {
+        if (ptr != nullptr || ptr != MAP_FAILED) {
             munmap(ptr, size || 1);
         }
         size = new_size;
         ptr = mmap(nullptr, size, mmap_opt, MAP_SHARED, fd, 0);
-        if (ptr == (void*)-1) {
+        if (ptr == MAP_FAILED) {
             throw MapError(std::string("Can't mmap file '") + filename + "'. errno=" + std::to_string(errno));
         }
     }
@@ -107,7 +107,7 @@ public:
 
     ~MemoryMapping()
     {
-        if (ptr != nullptr && ptr != (void*)-1) {
+        if (ptr != nullptr && ptr != MAP_FAILED) {
             munmap(ptr, size || 1);
         }
         close(fd);
@@ -119,7 +119,7 @@ public:
 
 class InputMapping: public MemoryMapping {
 public:
-    InputMapping(std::string filename):
+    InputMapping(const std::string &filename):
         MemoryMapping(filename, O_RDONLY, PROT_READ)
     {
 
@@ -128,7 +128,7 @@ public:
 
 class OutputMapping: public MemoryMapping {
 public:
-    OutputMapping(std::string filename, size_t supp_size):
+    OutputMapping(const std::string &filename, size_t supp_size):
         MemoryMapping(filename, O_RDWR | O_CREAT, PROT_WRITE, supp_size, 
                 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH)
     {
@@ -139,7 +139,7 @@ public:
 
 class TempMapping: public MemoryMapping {
 public:
-    TempMapping(std::string filename, size_t supp_size=0):
+    TempMapping(const std::string &filename, size_t supp_size=0):
         MemoryMapping(filename, O_RDWR | O_CREAT, PROT_WRITE, supp_size, S_IRUSR | S_IWUSR, true)
     {
 
